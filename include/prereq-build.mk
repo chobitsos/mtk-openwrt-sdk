@@ -164,9 +164,9 @@ $(eval $(call Require,gnutar, \
 	Please install GNU tar. \
 ))
 
-$(eval $(call RequireCommand,svn, \
-	Please install the subversion client. \
-))
+#$(eval $(call RequireCommand,svn, \
+#	Please install the subversion client. \
+#))
 
 $(eval $(call RequireCommand,openssl, \
 	Please install openssl. \

@@ -163,9 +163,6 @@ ramips_board_detect() {
 	*"Kingston MLW221")
 		name="mlw221"
 		;;
-	*"Kingston MLWG2")
-		name="mlwg2"
-		;;
 	*"Planex MZK-750DHP")
 		name="mzk-750dhp"
 		;;
@@ -186,9 +183,6 @@ ramips_board_detect() {
 		;;
 	*"Omnima MiniEMBWiFi")
 		name="omni-emb"
-		;;
-	*"Omnima MiniPlug")
-		name="omni-plug"
 		;;
 	*"Petatel PSR-680W"*)
 		name="psr-680w"
@@ -240,9 +234,6 @@ ramips_board_detect() {
 		;;
 	*"V22RW-2X2")
 		name="v22rw-2x2"
-		;;
-	*"VoCore")
-		name="vocore"
 		;;
 	*"W502U")
 		name="w502u"
@@ -338,7 +329,36 @@ ramips_board_detect() {
 		name="generic"
 		;;
 	esac
-
+	
+        if [ "$name" == "generic" ]; then
+                machine=$(awk 'BEGIN{FS="[ \t]+:[ \t]"} /system type/ {print $2}' /proc/cpuinfo)
+                case "$machine" in
+                        *"Ralink SoC")
+                        name="ralink-soc"
+                ;;
+                        *"MT7620")
+                            name="ralink-soc"
+                            ;;
+                        *"MT7620a")
+                            name="ralink-soc"
+                            ;;
+                        *"MT7621")
+                            name="ralink-soc"
+                            ;;
+			*"MT7628")
+                            name="ralink-soc"
+                            ;;
+			*"MT7688")
+                            name="ralink-soc"
+                            ;;
+			*"MT7615")
+                            name="ralink-soc"
+                            ;;
+			*"MT7623")
+                            name="ralink-soc"
+                            ;;
+                esac
+        fi
 	[ -z "$RAMIPS_BOARD_NAME" ] && RAMIPS_BOARD_NAME="$name"
 	[ -z "$RAMIPS_MODEL" ] && RAMIPS_MODEL="$machine"
 

@@ -1,5 +1,6 @@
 config IB
 	bool "Build the OpenWrt Image Builder"
+	depends on !TARGET_ROOTFS_INITRAMFS
 	depends on !PROFILE_KCONFIG
 	depends on !EXTERNAL_TOOLCHAIN
 	help

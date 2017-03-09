@@ -139,8 +139,4 @@
 			linux,code = <0x103>;
 		};
 	};
-
-	wmac@10180000 {
-		status = "disabled";
-	};
 };

@@ -123,7 +123,16 @@ static int wext_get_bssid(const char *ifname, char *buf)
 {
 	struct iwreq wrq;
 
-	if(wext_ioctl(ifname, SIOCGIWAP, &wrq) >= 0)
+	char cmd[256];
+	FILE *fp = NULL;
+
+	memset(cmd, 0, sizeof(cmd));
+	sprintf(cmd, "ifconfig %s | grep UP", ifname);
+	fp = popen(cmd, "r");
+	fscanf(fp, "%s\n", buf);
+	pclose(fp);
+
+	if(strlen(buf)>=2 && wext_ioctl(ifname, SIOCGIWAP, &wrq) >= 0)
 	{
 		sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
 			(uint8_t)wrq.u.ap_addr.sa_data[0], (uint8_t)wrq.u.ap_addr.sa_data[1],
@@ -132,6 +141,8 @@ static int wext_get_bssid(const char *ifname, char *buf)
 
 		return 0;
 	}
+	else
+		sprintf(buf, "00:00:00:00:00:00");
 
 	return -1;
 }

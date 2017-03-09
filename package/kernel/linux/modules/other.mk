@@ -324,7 +324,6 @@ define KernelPackage/oprofile
   TITLE:=OProfile profiling support
   KCONFIG:=CONFIG_OPROFILE
   FILES:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/oprofile/oprofile.ko
-  DEPENDS:=@KERNEL_PROFILING
 endef
 
 define KernelPackage/oprofile/description

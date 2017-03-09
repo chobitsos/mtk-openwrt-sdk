@@ -48,6 +48,8 @@ ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
 	xzcat $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
 	$(Kernel/Patch)
 	touch $(LINUX_DIR)/.quilt_used
+	ln -sf linux-$(LINUX_VERSION) `echo $(LINUX_DIR) | sed 's/-p[0-9]*//g'`
+	ln -sf linux-$(LINUX_VERSION) `echo $(LINUX_DIR) | sed 's/-[0-9]*\.[0-9]*\.[0-9]*-p[0-9]*/-kernel/g'`
     endef
   else
     define Kernel/Prepare/Default
