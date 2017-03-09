@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2013 hua.shao@mediatek.com
+# hua.shao@mediatek.com
 #
 # MTK Property Software.
 #
@@ -33,7 +33,7 @@ define Build/Prepare
 endef
 
 TARGET_CFLAGS += \
-	-I$(LINUX_DIR)/arch/mips/include \
+	-I$(LINUX_DIR)/arch/$(LINUX_KARCH)/include \
 	-I$(LINUX_DIR)/drivers/net/rt_rdm
 
 MAKE_FLAGS += \

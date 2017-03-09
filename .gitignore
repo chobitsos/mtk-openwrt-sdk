@@ -1,4 +1,5 @@
 *.o
+*.pyc
 .DS_Store
 .*.swp
 /env
@@ -17,6 +18,8 @@
 /package/openwrt-packages
 *.orig
 *.rej
+*.bak
+/private
 *~
 .#*
 *#

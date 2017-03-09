@@ -126,7 +126,8 @@ if m:formvalue("cbid.network.%s._switch" % net:name()) then
 			   k ~= "type" and
 			   k ~= "ifname" and
 			   k ~= "_orig_ifname" and
-			   k ~= "_orig_bridge"
+			   k ~= "_orig_bridge" and
+			   k ~= "macaddr"
 			then
 				m:del(net:name(), k)
 			end

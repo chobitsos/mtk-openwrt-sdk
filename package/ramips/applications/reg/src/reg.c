@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     if (strlen(driver) && strlen(devnum))
     {
-        snprintf(cmd, sizeof(cmd), "[ ! -c /dev/rdm0 ] && mknod /dev/rdm0 c %d 0", atoi(devnum));
+        snprintf(cmd, sizeof(cmd), "[ -c /dev/rdm0 ] || mknod /dev/rdm0 c %d 0", atoi(devnum));
         system(cmd);
     }
     else

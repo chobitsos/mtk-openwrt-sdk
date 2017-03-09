@@ -60,7 +60,7 @@ config MT76X2E_MBSS_SUPPORT
 
 config MT76X2E_NEW_MBSSID_MODE
 	bool "New MBSSID MODE"
-	depends on MT76X2E_RLT_AP_SUPPORT && MT76X2E_WMBSS_SUPPORT
+	depends on MT76X2E_RLT_AP_SUPPORT && MT76X2E_MBSS_SUPPORT
 	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6352 || RALINK_MT7620
 	default y
 
@@ -74,11 +74,17 @@ config MT76X2E_APCLI_SUPPORT
 	depends on MT76X2E_RLT_AP_SUPPORT
     default y
 
+config MT_76X2E_APCLI_CERT_SUPPORT
+        bool "AP-Client TGn Cert Support"
+        depends on MT76X2E_RLT_AP_SUPPORT
+        depends on MT76X2E_APCLI_SUPPORT
+        default n
+
 config MT76X2E_MAC_REPEATER_SUPPORT
 	bool "MAC Repeater Support"
 	depends on MT76X2E_RLT_AP_SUPPORT
-	depends on MT76X2E_WAPCLI_SUPPORT
-	depends on RALINK_RT6352 || RALINK_MT7620
+	depends on MT76X2E_APCLI_SUPPORT
+	depends on RALINK_RT6352 || RALINK_MT7620 || RALINK_MT7603E || MT76X2E_RLT_AP_SUPPORT
 	default y
 
 #config MT76X2E_MESH_SUPPORT
@@ -179,12 +185,12 @@ config MT76X2E_WSC_INCLUDED
 config MT76X2E_WSC_V2_SUPPORT
 	bool "WSC V2(WiFi Simple Config Version 2.0)"
 	default y
-    depends on MT76X2E_WWSC_INCLUDED
+    depends on MT76X2E_WSC_INCLUDED
 
 config MT76X2E_WSC_NFC_SUPPORT
 	bool "WSC by NFC"
 	default n
-    depends on MT76X2E_WWSC_INCLUDED
+    depends on MT76X2E_WSC_INCLUDED
 
 config MT76X2E_DOT11N_DRAFT3
 	bool "802.11n Draft3"

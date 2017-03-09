@@ -147,6 +147,10 @@ define Package/base-files/install
 				echo "$$$${conffile##$(1)}" >> $(1)/CONTROL/conffiles; \
 		fi \
 	done
+	-cp -f ../../.config $(1)/etc/openwrt.config
+	-cp -f $(LINUX_DIR)/.config $(1)/etc/kernel.config
+	if [ -d ../../.git ]; then echo `git rev-parse HEAD | cut -c-8` > $(1)/etc/sdk.version ;fi
+	if [ -f $(LINUX_DIR)/.p4rev ]; then cp $(LINUX_DIR)/.p4rev $(1)/etc/kernel.p4rev ;fi
 endef
 
 ifneq ($(DUMP),1)

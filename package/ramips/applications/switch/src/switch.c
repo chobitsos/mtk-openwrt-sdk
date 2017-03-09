@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <asm/types.h>
-#include <linux/autoconf.h>
 
 #include "ra_ioctl.h"
 

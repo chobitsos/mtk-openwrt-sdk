@@ -24,7 +24,6 @@ define KernelPackage/crypto-core
   TITLE:=Core CryptoAPI modules
   KCONFIG:= \
 	CONFIG_CRYPTO=y \
-	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_BLKCIPHER \
 	CONFIG_CRYPTO_ALGAPI \
 	$(foreach mod,$(CRYPTO_MODULES),$(call crypto_confvar,$(mod)))

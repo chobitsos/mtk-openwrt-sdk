@@ -55,6 +55,7 @@ ramips_setup_interfaces()
                 ucidef_set_interface_lan "eth0.2"
                 ;;
 
+	mlwg2 | \
 	wl-330n | \
 	wmr300)
 		ucidef_set_interface_lan "eth0.1"
@@ -196,7 +197,12 @@ ramips_setup_interfaces()
 	wli-tx4-ag300n)
 		ucidef_set_interface_lan "eth0"
 		;;
-
+	MT7620 | MT7628 | MT7688)
+		ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+		;;
+	MT7621 | MT7623)
+		ucidef_set_interfaces_lan_wan "eth0" "eth1"
+		;;
 	*)
 		RT3X5X=`cat /proc/cpuinfo | egrep "(RT3.5|RT5350)"`
 		if [ -n "${RT3X5X}" ]; then
@@ -286,10 +292,10 @@ ramips_setup_macs()
 	wnce2001)
 		wan_mac=$(mtd_get_mac_binary factory 46)
 		;;
-	ralink-soc)
+	MT7620 | MT7621 | MT7623 | MT7628 | MT7688)
 		lan_mac=$(eth_mac r lan)
-                wan_mac=$(eth_mac r wan)
-                ;;
+		wan_mac=$(eth_mac r wan)
+		;;
 
 	*)
 		lan_mac=$(cat /sys/class/net/eth0/address)

@@ -18,7 +18,7 @@
  * $Id: //WIFI_SOC/MP/SDK_4_3_0_0/RT288x_SDK/source/user/rt2880_app/gpio/gpio.c#1 $
  */
 
-#include <stdio.h>             
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -725,17 +725,41 @@ void gpio_set_led(int argc, char *argv[])
 void usage(char *cmd)
 {
 	printf("Usage: %s w - writing test (output)\n", cmd);
-	printf("       %s r - reading test (input)\n", cmd);
-	printf("       %s i (<gpio>) - interrupt test for gpio number\n", cmd);
-	printf("       %s l <gpio> <on> <off> <blinks> <rests> <times>\n", cmd);
-	printf("            - set led on <gpio>(0~24) on/off interval, no. of blinking/resting cycles, times of blinking\n");
+	printf("\t\t%s r - reading test (input)\n", cmd);
+	printf("\t\t%s i (<gpio>) - interrupt test for gpio number\n", cmd);
+	printf("\t\t%s l <gpio> <on> <off> <blinks> <rests> <times>\n", cmd);
+	printf("\t\t\t- set led on <gpio>(0~24) on/off interval, no. of blinking/resting cycles, times of blinking\n");
 	exit(0);
 }
 
 int main(int argc, char *argv[])
 {
+	int fd, method = 0, offset = 0, value = 0;
+	char driver[32]= {0};
+	char devnum[32]= {0};
+	char cmd[64] = {0};
+	FILE * fp = NULL;
+
 	if (argc < 2)
 		usage(argv[0]);
+
+	fp = popen("cat /proc/devices | grep gpio | sed  -r -n \"s/[0-9]+ //p\"", "r");
+	fscanf(fp, "%s", driver);
+	pclose(fp);
+
+	fp = popen("cat /proc/devices | grep gpio | sed  -r -n \"s/ [a-z0-9]*//p\"", "r");
+	fscanf(fp, "%s", devnum);
+	pclose(fp);
+
+	if (strlen(driver) && strlen(devnum))
+	{
+		snprintf(cmd, sizeof(cmd), "[ -c /dev/gpio ] || mknod /dev/gpio c %d 0", atoi(devnum));
+		system(cmd);
+	}
+	else
+	{
+		printf("gpio module not enabled!\n");
+	}
 
 	switch (argv[1][0]) {
 	case 'w':

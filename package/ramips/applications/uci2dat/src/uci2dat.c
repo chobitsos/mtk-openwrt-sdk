@@ -260,6 +260,7 @@ param CFG_ELEMENTS[] =
     {"HT_MpduDensity", NULL, {0}, hooker, "5"},
     {"HT_BW", "bw", {0}, hooker,  "0"},
     {"VHT_BW", "bw", {0}, hooker,  "0"},
+    {"VHT_Sec80_Channel", "vht2ndchannel", {0}, hooker, NULL},
     {"VHT_SGI", "vht_sgi", {0}, hooker,  "1"},
     {"VHT_STBC", "vht_stbc", {0}, hooker, "0"},
     {"VHT_BW_SIGNAL", "vht_bw_sig", {0}, hooker,  "0"},
@@ -281,14 +282,14 @@ param CFG_ELEMENTS[] =
     {"AutoProvisionEn", "autoprovision", {0}, hooker, "0"},
     {"FreqDelta", "freqdelta", {0}, hooker, "0"},
     {"CarrierDetect", "carrierdetect", {0}, hooker, "0"},
-    {"ITxBfEn", "itxbf", {0}, hooker, "0"},
+//    {"ITxBfEn", "itxbf", {0}, hooker, "0"},
     {"PreAntSwitch", "preantswitch", {0}, hooker, "1"},
     {"PhyRateLimit", "phyratelimit", {0}, hooker, "0"},
     {"DebugFlags", "debugflags", {0}, hooker, "0"},
-    {"ETxBfEnCond", NULL, {0}, NULL, "0"},
+//    {"ETxBfEnCond", NULL, {0}, NULL, "0"},
     {"ITxBfTimeout", NULL, {0}, NULL, "0"},
     {"ETxBfNoncompress", NULL, {0}, NULL, "0"},
-    {"ETxBfIncapable", NULL, {0}, NULL, "0"},
+//    {"ETxBfIncapable", NULL, {0}, NULL, "1"},
     {"FineAGC", "fineagc", {0}, hooker, "0"},
     {"StreamMode", "streammode", {0}, hooker, "0"},
     {"StreamModeMac0", NULL, {0}, NULL, NULL},
@@ -385,7 +386,7 @@ param CFG_ELEMENTS[] =
     {"ApCliKey4Type", NULL, {0}, NULL, "0"},
     {"ApCliKey4Str", NULL, {0}, NULL, NULL},
     {"EfuseBufferMode", "efusebufmode", {0}, hooker, "0"},
-    {"E2pAccessMode", "e2paccmode", {0}, hooker, "2"},
+    {"E2pAccessMode", "e2paccmode", {0}, hooker, "1"},
     {"RadioOn", "radio", {0}, hooker, "1"},
     {"BW_Enable", "bw_enable", {0}, hooker, "0"},
     {"BW_Root", "bw_root", {0}, hooker, "0"},
@@ -402,6 +403,15 @@ param CFG_ELEMENTS[] =
     {"WscVendorPinCode", "wsc_vendorpin", {0}, hooker, NULL},
     {"WscV2Support", "wsc_v2", {0}, hooker, NULL},
     {"HT_MIMOPS", "mimops", {0}, hooker, "3"},
+    {"G_BAND_256QAM", "g256qam", {0}, hooker, "0"},
+    {"DBDC_MODE", "dbdc", {0}, hooker, "0"},
+    {"txbf", "txbf", {0}, hooker, "0"},
+    {"IgmpSnEnable", "igmpsnoop", {0}, hooker, "1"},
+
+    {"MUTxRxEnable", "mutxrxenable", {0}, hooker, "0"},
+
+    {"ITxBfEnCond", "itxbfencond", {0}, hooker, "0"},
+
 
 };
 
@@ -893,6 +903,10 @@ void hooker(FILE * fp, param * p, const char * devname)
     {
         if(0 == strcmp(p->value, "2"))
             FPRINT(fp, p, "1");
+	else if (0 == strcmp(p->value, "3"))
+	    FPRINT(fp, p, "2");
+	else if (0 == strcmp(p->value, "4"))
+	    FPRINT(fp, p, "3");
         else
             FPRINT(fp, p, "0");
     }
@@ -1017,6 +1031,37 @@ void hooker(FILE * fp, param * p, const char * devname)
             FPRINT(fp, p, "%s", wifi_cfg[N].vifs[j].wepkey[i].value+2);
         else
             FPRINT(fp, p, "%s", wifi_cfg[N].vifs[j].wepkey[i].value);
+    }
+    else if (0 == strcmp(p->dat_key, "txbf"))
+    {
+       if (0 == strcmp(p->value, "3"))
+       {
+            FPRINT(fp, p, "3\n");
+            FPRINT(fp, p, "ETxBfEnCond=1\n");
+            FPRINT(fp, p, "ETxBfIncapable=0\n");
+            FPRINT(fp, p, "ITxBfEn=1");
+       }
+       else if (0 == strcmp(p->value, "2"))
+       {
+            FPRINT(fp, p, "2\n");
+            FPRINT(fp, p, "ETxBfEnCond=1\n");
+            FPRINT(fp, p, "ETxBfIncapable=0\n");
+            FPRINT(fp, p, "ITxBfEn=0");
+       }
+       else if (0 == strcmp(p->value, "1"))
+       {
+            FPRINT(fp, p, "1\n");
+            FPRINT(fp, p, "ETxBfEnCond=0\n");
+            FPRINT(fp, p, "ETxBfIncapable=1\n");
+            FPRINT(fp, p, "ITxBfEn=1");
+       }
+       else if (0 == strcmp(p->value, "0"))
+       {
+            FPRINT(fp, p, "0\n");
+            FPRINT(fp, p, "ETxBfEnCond=0\n");
+            FPRINT(fp, p, "ETxBfIncapable=1\n");
+            FPRINT(fp, p, "ITxBfEn=0");
+       }
     }
 #if 0
     else if(0 == strmatch(p->dat_key, "ApCliKey?Type"))  /* Ap Client Mode */

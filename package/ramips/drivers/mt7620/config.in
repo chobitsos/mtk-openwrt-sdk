@@ -173,6 +173,43 @@ config  RT2860V2_ADJ_PWR_CONSUMPTION_SUPPORT
     depends on RALINK_MT7620 || RALINK_RT6352
     default n
 
+config  RT2860V2_TPSK_SUPPORT
+    bool "TPSK Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+config RT2860V2_VEDOR_IE_CONTROL_SUPPORT
+    bool "Vedor IE Control Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+config RT2860V2_VEDOR_IE_FILTER_SUPPORT
+    bool "Vedor IE Filter Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+config RT2860V2_SNIFFER_STA_PROBE_SUPPORT
+    bool "Sniffer STA Probe Switch Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+config RT2860V2_STA_INFO_SNIFFER_SUPPORT
+    bool "Sniffer STA Info Sniffer Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+config RT2860V2_DEV_MSG_EVENT_SEND_SUPPORT
+    bool "Dev Msg Netlink Send Support"
+    depends on RT2860V2_AP
+    depends on RALINK_MT7620 || RALINK_RT6352
+    default n
+
+
 config  RT2860V2_SINGLE_SKU
     bool "Single SKU"
     depends on RT2860V2_AP

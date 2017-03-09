@@ -6,12 +6,13 @@ STOP=91
 USE_PROCD=1
 
 start_service() {
-	insmod /lib/modules/ralink/hw_nat.ko
+#	insmod /lib/modules/ralink/hw_nat.ko
 	mknod /dev/hwnat0 c 220 0
 }
 
 stop_service() {
-	rmmod hw_nat.ko
+#	rmmod hw_nat.ko
+    echo 'do nothing' > /dev/null
 }
 
 

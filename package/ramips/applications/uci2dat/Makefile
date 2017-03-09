@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2013 hua.shao@mediatek.com
+# hua.shao@mediatek.com
 #
 # MTK Property Software.
 #

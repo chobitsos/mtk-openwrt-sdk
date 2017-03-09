@@ -6,7 +6,11 @@ else
 ifeq ($(CONFIG_RALINK_MT7621),y)
 SRC=switch_gsw.c
 else
+ifeq ($(CONFIG_ARCH_MT7623),y)
+SRC=switch_gsw.c
+else
 SRC=switch.c
+endif
 endif
 endif
 

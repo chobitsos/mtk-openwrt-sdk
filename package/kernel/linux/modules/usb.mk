@@ -1012,6 +1012,22 @@ endef
 $(eval $(call KernelPackage,usb-net-asix))
 
 
+define KernelPackage/usb-net-asix-88179
+  TITLE:=Kernel module for USB-to-Ethernet Asix convertors
+  DEPENDS:=+!LINUX_3_3:kmod-libphy
+  KCONFIG:=CONFIG_USB_NET_AX88179_178A
+  FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/ax88179_178a.ko
+  AUTOLOAD:=$(call AutoProbe,ax88179_178a)
+  $(call AddDepends/usb-net)
+endef
+
+define KernelPackage/usb-net-asix-88179/description
+ Kernel module for USB-to-Ethernet Asix convertors
+endef
+
+$(eval $(call KernelPackage,usb-net-asix-88179))
+
+
 define KernelPackage/usb-net-hso
   TITLE:=Kernel module for Option USB High Speed Mobile Devices
   KCONFIG:=CONFIG_USB_HSO

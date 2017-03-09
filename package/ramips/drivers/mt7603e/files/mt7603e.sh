@@ -21,7 +21,7 @@ enable_mt7603e() {
 
 detect_mt7603e() {
 #	detect_ralink_wifi mt7603e mt7603e
-	ssid=mt7603e-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
+	ssid=mt7603e #-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
 	cd /sys/module/
 	[ -d $module ] || return
         [ -e /etc/config/wireless ] && return

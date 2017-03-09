@@ -1146,6 +1146,7 @@ static void nl80211_fill_signal(const char *ifname, struct nl80211_rssi_rate *r)
 
 static int nl80211_get_bitrate(const char *ifname, int *buf)
 {
+#if 0
 	struct nl80211_rssi_rate rr;
 
 	nl80211_fill_signal(ifname, &rr);
@@ -1157,10 +1158,14 @@ static int nl80211_get_bitrate(const char *ifname, int *buf)
 	}
 
 	return -1;
+#endif
+    return wext_ops.bitrate(ifname, buf);
+
 }
 
 static int nl80211_get_signal(const char *ifname, int *buf)
 {
+#if 0
 	struct nl80211_rssi_rate rr;
 
 	nl80211_fill_signal(ifname, &rr);
@@ -1172,6 +1177,8 @@ static int nl80211_get_signal(const char *ifname, int *buf)
 	}
 
 	return -1;
+#endif
+    return wext_ops.signal(ifname, buf);
 }
 
 static int nl80211_get_noise_cb(struct nl_msg *msg, void *arg)

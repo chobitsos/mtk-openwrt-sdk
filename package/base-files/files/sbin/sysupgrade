@@ -208,6 +208,9 @@ if [ $TEST -eq 1 ]; then
 	exit 0
 fi
 
+v "shut down wifi "
+wifi down
+ifdown -a
 run_hooks "" $sysupgrade_pre_upgrade
 
 ubus call system upgrade

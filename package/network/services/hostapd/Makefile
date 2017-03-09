@@ -13,7 +13,8 @@ PKG_RELEASE:=1
 PKG_REV:=84df167554569af8c87f0a8ac1fb508192417d8e
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=git://w1.fi/srv/git/hostap.git
+#PKG_SOURCE_URL:=git://w1.fi/srv/git/hostap.git
+PKG_SOURCE_URL:=https://github.com/greearb/hostap-ct.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=$(PKG_REV)
 PKG_SOURCE_PROTO:=git

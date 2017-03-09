@@ -20,7 +20,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  --[[
  back = s:option(DummyValue, "_overview", translate("Overview"))
  back.value = ""
-@@ -129,21 +129,27 @@ st = s:taboption("general", DummyValue, 
+@@ -129,21 +129,27 @@ st = s:taboption("general", DummyValue,
  st.template = "admin_network/wifi_status"
  st.ifname   = arg[1]
  
@@ -61,7 +61,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  -- NanoFoo
  local nsantenna = wdev:get("antenna")
  
-@@ -158,20 +164,324 @@ for _, net in ipairs(wdev:get_wifinets()
+@@ -158,20 +164,332 @@ for _, net in ipairs(wdev:get_wifinets()
  	end
  end
  
@@ -155,6 +155,10 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +        bw:value("1", translate("40MHz"))
 +	if band == "5G" then
 +        bw:value("2", translate("80MHz"))
++        bw:value("3", translate("160MHz"))
++	bw:value("4", translate("80+80MHz"))	
++	vht2ndchannel = s:taboption("general", Value, "vht2ndchannel", translate("2nd channel"))
++        vht2ndchannel:depends({bw="4"})
 +	bw.default = 2
 +	else
 +	bw.default = 1
@@ -168,7 +172,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +	country:value("IE")
 +	country:value("HK")
 +	country:value("None")
-+	country.default = "None"
++	country.default = "US"
 +
 +	region = s:taboption("advanced", ListValue, "region", translate("Support Channel"))
 +	region:depends("wifimode","0")
@@ -236,7 +240,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +	ShortPreamble = s:taboption("advanced", ListValue, "txpreamble", translate("Short Preamble"))
 +        ShortPreamble:value("0",translate("Disable"))
 +        ShortPreamble:value("1",translate("Enable"))
-+	ShortPreamble.default = 0
++	ShortPreamble.default = 1
 +        ShortSlot = s:taboption("advanced", ListValue, "shortslot", translate("Short Slot"))
 +        ShortSlot:value("0",translate("Disable"))
 +        ShortSlot:value("1",translate("Enable"))
@@ -252,7 +256,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +        IEEE80211H = s:taboption("advanced", ListValue, "ieee80211h", translate("IEEE 802.11H Support"))
 +        IEEE80211H:value("0",translate("Disable"))
 +        IEEE80211H:value("1",translate("Enable"))
-+	IEEE80211H.default = 0
++	IEEE80211H.default = 1
 +--------------------------------------------HT Physical Mode-------------------------------------------------
 +	ht_bsscoexist = s:taboption("htmode", ListValue, "ht_bsscoexist", translate("20/40 Coexistence"))
 +	ht_bsscoexist:depends({wifimode="7",bw="1"})
@@ -274,7 +278,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +	ht_rdg = s:taboption("htmode", ListValue, "ht_rdg", translate("Reverse Direction Grant(RDG)"))
 +        ht_rdg:value("0",translate("Disable"))
 +        ht_rdg:value("1",translate("Enable"))
-+        ht_rdg.default = 0
++        ht_rdg.default = 1
 +	ht_stbc = s:taboption("htmode", ListValue, "ht_stbc", translate("Space Time Block Coding (STBC)"))
 +        ht_stbc:value("0",translate("Disable"))
 +        ht_stbc:value("1",translate("Enable"))
@@ -282,7 +286,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +	ht_amsdu = s:taboption("htmode", ListValue, "ht_amsdu", translate("Aggregation MSDU(A-MSDU)"))
 +        ht_amsdu:value("0",translate("Disable"))
 +        ht_amsdu:value("1",translate("Enable"))
-+        ht_amsdu.default = 0
++        ht_amsdu.default = 1
 +	ht_autoba = s:taboption("htmode", ListValue, "ht_autoba", translate("Auto Block ACK"))
 +        ht_autoba:value("0",translate("Disable"))
 +        ht_autoba:value("1",translate("Enable"))
@@ -335,10 +339,14 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 +	ht_txstream = s:taboption("htmode", ListValue, "ht_txstream", translate("HT TxStream"))
 +	ht_txstream:value("1",translate("1"))
 +        ht_txstream:value("2",translate("2"))
++        ht_txstream:value("3",translate("3"))
++	ht_txstream:value("4",translate("4"))
 +        ht_txstream.default = 2
 +	ht_rxstream = s:taboption("htmode", ListValue, "ht_rxstream", translate("HT RxStream"))
 +        ht_rxstream:value("1",translate("1"))
 +        ht_rxstream:value("2",translate("2"))
++        ht_rxstream:value("3",translate("3"))
++	ht_rxstream:value("4",translate("4"))
 +        ht_rxstream.default = 2
 +
 +	if htcaps then
@@ -397,7 +405,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  ------------------- MAC80211 Device ------------------
  
  if hwtype == "mac80211" then
-@@ -392,13 +702,14 @@ s:tab("encryption", translate("Wireless 
+@@ -392,13 +710,14 @@ s:tab("encryption", translate("Wireless
  s:tab("macfilter", translate("MAC-Filter"))
  s:tab("advanced", translate("Advanced Settings"))
  
@@ -415,7 +423,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  
  bssid = s:taboption("general", Value, "bssid", translate("<abbr title=\"Basic Service Set Identifier\">BSSID</abbr>"))
  
-@@ -441,6 +752,76 @@ function network.write(self, section, va
+@@ -441,6 +760,76 @@ function network.write(self, section, va
  	end
  end
  
@@ -492,7 +500,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  -------------------- MAC80211 Interface ----------------------
  
  if hwtype == "mac80211" then
-@@ -664,7 +1045,6 @@ encr:depends({mode="ahdemo"})
+@@ -664,7 +1053,6 @@ encr:depends({mode="ahdemo"})
  encr:depends({mode="ap-wds"})
  encr:depends({mode="sta-wds"})
  encr:depends({mode="mesh"})
@@ -500,7 +508,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  cipher = s:taboption("encryption", ListValue, "cipher", translate("Cipher"))
  cipher:depends({encryption="wpa"})
  cipher:depends({encryption="wpa2"})
-@@ -672,7 +1052,7 @@ cipher:depends({encryption="psk"})
+@@ -672,7 +1060,7 @@ cipher:depends({encryption="psk"})
  cipher:depends({encryption="psk2"})
  cipher:depends({encryption="wpa-mixed"})
  cipher:depends({encryption="psk-mixed"})
@@ -509,7 +517,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  cipher:value("ccmp", translate("Force CCMP (AES)"))
  cipher:value("tkip", translate("Force TKIP"))
  cipher:value("tkip+ccmp", translate("Force TKIP and CCMP (AES)"))
-@@ -721,22 +1101,34 @@ encr:value("none", "No Encryption")
+@@ -721,22 +1109,34 @@ encr:value("none", "No Encryption")
  encr:value("wep-open",   translate("WEP Open System"), {mode="ap"}, {mode="sta"}, {mode="ap-wds"}, {mode="sta-wds"}, {mode="adhoc"}, {mode="ahdemo"}, {mode="wds"})
  encr:value("wep-shared", translate("WEP Shared Key"),  {mode="ap"}, {mode="sta"}, {mode="ap-wds"}, {mode="sta-wds"}, {mode="adhoc"}, {mode="ahdemo"}, {mode="wds"})
  
@@ -548,7 +556,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  	elseif hostapd and not supplicant then
  		encr:value("psk", "WPA-PSK", {mode="ap"}, {mode="ap-wds"})
  		encr:value("psk2", "WPA2-PSK", {mode="ap"}, {mode="ap-wds"})
-@@ -757,10 +1149,10 @@ if hwtype == "atheros" or hwtype == "mac
+@@ -757,10 +1157,10 @@ if hwtype == "atheros" or hwtype == "mac
  			encr:value("wpa", "WPA-EAP", {mode="sta"}, {mode="sta-wds"})
  			encr:value("wpa2", "WPA2-EAP", {mode="sta"}, {mode="sta-wds"})
  		end
@@ -563,7 +571,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  	else
  		encr.description = translate(
  			"WPA-Encryption requires wpa_supplicant (for client mode) or hostapd (for AP " ..
-@@ -772,52 +1164,96 @@ elseif hwtype == "broadcom" then
+@@ -772,52 +1172,96 @@ elseif hwtype == "broadcom" then
  	encr:value("psk2", "WPA2-PSK")
  	encr:value("psk+psk2", "WPA-PSK/WPA2-PSK Mixed Mode")
  end
@@ -660,7 +668,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  acct_secret.rmempty = true
  acct_secret.password = true
  
-@@ -882,12 +1318,14 @@ for slot=1,4 do
+@@ -882,12 +1326,14 @@ for slot=1,4 do
  end
  
  
@@ -676,7 +684,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  	nasid.rmempty = true
  
  	eaptype = s:taboption("encryption", ListValue, "eap_type", translate("EAP-Method"))
-@@ -896,32 +1334,42 @@ if hwtype == "atheros" or hwtype == "mac
+@@ -896,32 +1342,42 @@ if hwtype == "atheros" or hwtype == "mac
  	eaptype:value("peap", "PEAP")
  	eaptype:depends({mode="sta", encryption="wpa"})
  	eaptype:depends({mode="sta", encryption="wpa2"})
@@ -719,7 +727,7 @@ Index: luci/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
  
  
  	auth = s:taboption("encryption", Value, "auth", translate("Authentication"))
-@@ -931,33 +1379,45 @@ if hwtype == "atheros" or hwtype == "mac
+@@ -931,33 +1387,45 @@ if hwtype == "atheros" or hwtype == "mac
  	auth:value("MSCHAPV2")
  	auth:depends({mode="sta", eap_type="peap", encryption="wpa2"})
  	auth:depends({mode="sta", eap_type="peap", encryption="wpa"})

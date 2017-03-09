@@ -23,11 +23,11 @@ repair_wireless_uci() {
         echo "nettype $nettype" >>/tmp/wifi.log
     
         case "$device" in
-            mt7620 | mt7602e | mt7603e | mt7628 | mt7688)
+            mt7620 | mt7602e | mt7603e | mt7628 | mt7688 | mt7615e2 )
                 netif_new="ra"${ifn2g}
                 ifn2g=$(( $ifn2g + 1 ))
                 ;;
-            mt7610e | mt7612e )
+            mt7610e | mt7612e | mt7615e5)
                 netif_new="rai"${ifn5g}
                 ifn5g=$(( $ifn5g + 1 ))
                 ;;
@@ -39,10 +39,10 @@ repair_wireless_uci() {
         echo "ifn5g = ${ifn5g}, ifn2g = ${ifn2g}" >>/tmp/wifi.log
         echo "netif_new = ${netif_new}" >>/tmp/wifi.log
             
-        if [ "$netif" == "" ]; then
-            echo "ifname empty, we'll fix it with ${netif_new}" >>/tmp/wifi.log
-            uci -q set ${vif}.ifname=${netif_new}
-        fi
+        #if [ "$netif" == "" ]; then
+        echo "ifname set to ${netif_new}" >>/tmp/wifi.log
+        uci -q set ${vif}.ifname=${netif_new}
+        #fi
         if [ "$nettype" == "" ]; then
             nettype="lan"
             echo "nettype empty, we'll fix it with ${nettype}" >>/tmp/wifi.log
@@ -70,6 +70,7 @@ chk8021x() {
         echo "u8021x dev $device" > /tmp/802.$device.log
         config_get vifs "$device" vifs
         for vif in $vifs; do
+                local ifname
                 config_get ifname $vif ifname
                 echo "ifname = $ifname" >> /tmp/802.$device.log
                 config_get encryption $vif encryption
@@ -105,12 +106,12 @@ chk8021x() {
                 echo "killall 8021xd" >>/tmp/802.$device.log
                 killall 8021xd
                 echo "/bin/8021xd -d 9" >>/tmp/802.$device.log
-                /bin/8021xd -d 9 >> /tmp/802.$device.log 2>&1
+                8021xd -d 9 >> /tmp/802.$device.log 2>&1
             else # $prefixa == rai
                 echo "killall 8021xdi" >>/tmp/802.$device.log
                 killall 8021xdi
                 echo "/bin/8021xdi -d 9" >>/tmp/802.$device.log
-                /bin/8021xdi -d 9 >> /tmp/802.$device.log 2>&1
+                8021xdi -d 9 >> /tmp/802.$device.log 2>&1
             fi
         else
             if [ "$prefix" == "ra" ]; then
@@ -123,48 +124,6 @@ chk8021x() {
         fi
 }
 
-
-# $1=device, $2=module
-reinit_wifi() {
-    echo "reinit_wifi($1,$2,$3,$4)" >>/tmp/wifi.log
-    local device="$1"
-    local module="$2"
-    config_get vifs "$device" vifs
-
-    # shut down all vifs first
-    for vif in $vifs; do
-        config_get ifname $vif ifname
-        ifconfig $ifname down
-    done
-
-    # in some case we have to reload drivers. (mbssid eg)
-    #ref=`cat /sys/module/$module/refcnt`
-    #if [ $ref != "0" ]; then
-    #    # but for single driver, we only need to reload once.
-    #    echo "$module ref=$ref, skip reload module" >>/tmp/wifi.log
-    #else
-    #    echo "rmmod $module" >>/tmp/wifi.log
-    #    rmmod $module
-    #    echo "insmod $module" >>/tmp/wifi.log
-    #    insmod $module
-    #fi
-
-    # bring up vifs
-    for vif in $vifs; do
-        config_get ifname $vif ifname
-        config_get disabled $vif disabled
-        echo "ifconfig $ifname down" >>/tmp/wifi.log
-        if [ "$disabled" == "1" ]; then
-            echo "$ifname marked disabled, skip" >>/tmp/wifi.log
-            continue
-        else
-            echo "ifconfig $ifname up" >>/tmp/wifi.log
-            ifconfig $ifname up
-        fi
-    done
-
-    chk8021x $device
-}
 
 prepare_ralink_wifi() {
     echo "prepare_ralink_wifi($1,$2,$3,$4)" >>/tmp/wifi.log
@@ -214,23 +173,44 @@ disable_ralink_wifi() {
 enable_ralink_wifi() {
     echo "enable_ralink_wifi($1,$2,$3,$4)" >>/tmp/wifi.log
     local device="$1"
+    local module="$2"
     config_get vifs "$device" vifs
+
+    # shut down all vifs first
+    for vif in $vifs; do
+        config_get ifname $vif ifname
+        ifconfig $ifname down
+    done
+
+    # in some case we have to reload drivers. (mbssid)
+    ref=`cat /sys/module/$module/refcnt`
+    if [ $ref != "0" ]; then
+        # but for single driver, we only need to reload once.
+        echo "$module ref=$ref, skip reload module" >>/tmp/wifi.log
+    else
+        echo "rmmod $module" >>/tmp/wifi.log
+        rmmod hw_nat
+        rmmod $module
+        echo "insmod $module" >>/tmp/wifi.log
+        insmod $module
+        insmod /lib/module/ralink/hw_nat.ko
+    fi
 
     # bring up vifs
     for vif in $vifs; do
         config_get ifname $vif ifname
         config_get disabled $vif disabled
-	config_get radio $device radio
-        ifconfig $ifname down
-        echo "ifconfig $ifname down" >>/dev/null
+        config_get radio $device radio
+
+        # here's the tricky part. we need at least 1 vif to trigger
+        # the creation of all other vifs.
+        ifconfig $ifname up
+        echo "ifconfig $ifname up" >> /tmp/wifi.log
         if [ "$disabled" == "1" ]; then
-            echo "$ifname marked disabled, skip" >>/dev/null
-            continue
-        else
-            echo "ifconfig $ifname up" >>/dev/null
-            ifconfig $ifname up
+            echo "$ifname sets to disabled." >> /tmp/wifi.log
+            ifconfig $ifname down
         fi
-	#Radio On/Off only support iwpriv command but dat file
+        #Radio On/Off only support iwpriv command but dat file
         [ "$radio" == "0" ] && iwpriv $ifname set RadioOn=0
         local net_cfg bridge
         net_cfg="$(find_net_config "$vif")"
@@ -239,9 +219,10 @@ enable_ralink_wifi() {
             config_set "$vif" bridge "$bridge"
             start_net "$ifname" "$net_cfg"
         }
-	chk8021x $device
         set_wifi_up "$vif" "$ifname"
     done
+    chk8021x $device
+    setsmp.sh
 }
 
 detect_ralink_wifi() {
@@ -256,11 +237,11 @@ detect_ralink_wifi() {
     config_get channel $device channel
     [ -z "$channel" ] || return
     case "$device" in
-        mt7620 | mt7602e | mt7603e | mt7628 )
+        mt7620 | mt7602e | mt7603e | mt7628 | mt7615e2 )
             ifname="ra0"
             band="2.4G"
             ;;
-        mt7610e | mt7612e )
+        mt7610e | mt7612e | mt7615e5)
             ifname="rai0"
             band="5G"
             ;;

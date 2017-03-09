@@ -19,24 +19,41 @@
 
 #include <linux/watchdog.h>
 
+#if 0
+#define TRACE(...) \
+    do { \
+        fprintf(stderr, "<trace> "__VA_ARGS__); \
+        fprintf(stderr, " %s, L%d.\n", __FUNCTION__, __LINE__); \
+    } while(0)
+#else
+#define TRACE(...)
+#endif
+
+
 static int _running = 1;
-void sigterm_handler(int arg)
+static int fd = 0;
+
+void sigusr1_handler(int arg)
 {
     _running = 0;
 }
 
-#if 0
-#define TRACE(str) fprintf(stderr, "%s(), L%d. %s\n", __FUNCTION__, __LINE__, str)
-#else
-#define TRACE(str)
-#endif
+void sigterm_handler(int arg)
+{
+	int ret;
+    int opt = 0;
+    _running = 0;
+    opt = WDIOS_DISABLECARD;
+    ret = ioctl(fd, WDIOC_SETOPTIONS, &opt);
+    if ( ret == EINTR )
+        ioctl(fd, WDIOC_SETOPTIONS, &opt);
+    TRACE("WDIOS_DISABLECARD %d", ret);
+}
 
 
 int main(int argc, char *const argv[])
 {
     pid_t pid = 0;
-    int fd = 0;
-    int opt = 0;
     int ret = 0;
 
     TRACE("");
@@ -68,9 +85,8 @@ int main(int argc, char *const argv[])
     }
 
     TRACE("");
-    /* set signal term to call sigterm_handler() */
-    /* to make sure fd device is closed */
     signal(SIGTERM, sigterm_handler);
+    signal(SIGUSR1, sigusr1_handler);
 
     /* main loop: feeds the dog every <tint> seconds */
     while(_running)
@@ -83,20 +99,9 @@ int main(int argc, char *const argv[])
         sleep(1);
     }
 
-    fprintf(stderr, "wdt app will quit, sending WDIOS_DISABLECARD to driver. \n");
-    opt = WDIOS_DISABLECARD;
+    fprintf(stderr, "wdt app get killed.\n");
 
 __retry:
-#if 0
-    ret = ioctl(fd, WDIOC_SETOPTIONS, &opt);
-    if ( ret == EINTR )
-        goto __retry;
-    else if (ret < 0)
-        fprintf(stderr, "ioctl WDIOS_DISABLECARD fail: %s.\n", strerror(errno));
-    else
-        fprintf(stderr, "ioctl WDIOS_DISABLECARD done!\n");
-#endif
-    fprintf(stderr, "app stop feeding.\n");
     if (close(fd) == -1)
     {
         TRACE("");

@@ -21,7 +21,7 @@ enable_mt7612e() {
 
 detect_mt7612e() {
 #	detect_ralink_wifi mt7612e mt76x2e
-	ssid=mt7612e-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
+	ssid=mt7612e #-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
 	cd /sys/module/
 	[ -d $module ] || return
 	[ -e /etc/config/wireless ] && return

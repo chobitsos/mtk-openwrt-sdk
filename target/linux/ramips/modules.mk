@@ -60,17 +60,38 @@ define KernelPackage/hw_nat
   SUBMENU:=Drivers
   TITLE:=MTK Hardware NAT
   KCONFIG:=CONFIG_RA_HW_NAT
-  DEPENDS:=@TARGET_ramips_mt7620a||@TARGET_ramips_mt7621
+  DEPENDS:=@TARGET_ramips_mt7620||@TARGET_ramips_mt7621||@TARGET_mediatek_mt7623_emmc||@TARGET_mediatek_mt7623_mtd
   FILES:=$(LINUX_DIR)/net/nat/hw_nat/hw_nat.ko
   AUTOLOAD:=$(call AutoProbe,hw_nat)
 endef
 
 define KernelPackage/hw_nat/install
 	$(INSTALL_DIR) $(1)/lib/modules/ralink/
-	mv $(1)/lib/modules/3.10.14/hw_nat.ko $(1)/lib/modules/ralink/
+	mv $(1)/lib/modules/$(if $(findstring y,$(CONFIG_TARGET_mediatek)),3.10.20,3.10.14)/hw_nat.ko $(1)/lib/modules/ralink/
 endef
 
 $(eval $(call KernelPackage,hw_nat))
+
+define KernelPackage/nf-sc
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=Netfilter shortcut
+  DEPENDS:=+kmod-ipt-core
+  KCONFIG:=CONFIG_NF_SHORTCUT_HOOK
+  FILES:=$(LINUX_DIR)/net/netfilter/nf_sc.ko
+  AUTOLOAD:=$(call AutoProbe,nf_sc)
+endef
+
+define KernelPackage/nf-sc/install
+	$(INSTALL_DIR) $(1)/lib/modules/ralink/
+	mv $(1)/lib/modules/$(if $(findstring y,$(CONFIG_TARGET_mediatek)),3.10.20,3.10.14)/nf_sc.ko $(1)/lib/modules/ralink/
+endef
+
+define KernelPackage/nf-sc/description
+ Kernel modules support for shortcut
+endef
+
+$(eval $(call KernelPackage,nf-sc))
 
 define KernelPackage/sound-mt7620
   TITLE:=MT7620 PCM/I2S Alsa Driver
@@ -91,6 +112,77 @@ define KernelPackage/sound-mt7620/description
 endef
 
 $(eval $(call KernelPackage,sound-mt7620))
+
+
+
+define KernelPackage/mtk-gdma
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=GDMA Driver
+  DEPENDS:=@TARGET_ramips_mt7621
+  KCONFIG:=CONFIG_RALINK_GDMA CONFIG_GDMA_EVERYBODY
+  FILES:=$(LINUX_DIR)/drivers/char/ralink_gdma.ko
+  AUTOLOAD:=$(call AutoLoad,90,ralink_gdma)
+endef
+
+define KernelPackage/mtk-gdma/description
+  MediaTek APSoC GDMA driver
+endef
+
+$(eval $(call KernelPackage,mtk-gdma))
+
+
+
+define KernelPackage/mtk-i2c
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=MTK I2C Driver
+  DEPENDS:=@TARGET_ramips_mt7621
+  KCONFIG:=CONFIG_RALINK_I2C
+  FILES:=$(LINUX_DIR)/drivers/char/i2c_drv.ko
+  AUTOLOAD:=$(call AutoLoad,90,i2c_drv)
+endef
+
+define KernelPackage/mtk-i2c/description
+  MediaTek APSoC I2C Driver
+endef
+
+$(eval $(call KernelPackage,mtk-i2c))
+
+
+define KernelPackage/mtk-pcm
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=MTK PCM Driver
+  DEPENDS:=@TARGET_ramips_mt7621 +kmod-mtk-gdma
+  KCONFIG:=CONFIG_RALINK_PCM
+  FILES:=$(LINUX_DIR)/drivers/char/pcm/ralink_pcm.ko
+  AUTOLOAD:=$(call AutoLoad,90,ralink_pcm)
+endef
+
+define KernelPackage/mtk-pcm/description
+  MediaTek APSoC PCM Driver
+endef
+
+$(eval $(call KernelPackage,mtk-pcm))
+
+
+define KernelPackage/mtk-i2s
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=I2S Driver
+  DEPENDS:=@TARGET_ramips_mt7621 +kmod-mtk-gdma +kmod-mtk-i2c
+  KCONFIG:=CONFIG_RALINK_I2S CONFIG_I2S_WM8960
+  FILES:=$(LINUX_DIR)/drivers/char/i2s/ralink_i2s.ko
+  AUTOLOAD:=$(call AutoLoad,90,ralink_i2s)
+endef
+
+define KernelPackage/mtk-i2s/description
+  MediaTek APSoC I2S driver, along with a WM8960 driver (You don't
+  have to choose /sound/soc/codecs/wm8960 .
+endef
+
+$(eval $(call KernelPackage,mtk-i2s))
 
 
 
@@ -147,5 +239,17 @@ define KernelPackage/rdm
 endef
 
 $(eval $(call KernelPackage,rdm))
+
+
+define KernelPackage/cfg80211-normal
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=CFG80211 kernel support
+  KCONFIG:=CONFIG_CFG80211=m
+  FILES:=$(LINUX_DIR)/net/wireless/cfg80211.ko
+  AUTOLOAD:=$(call AutoProbe,cfg80211)
+endef
+
+$(eval $(call KernelPackage,cfg80211-normal))
 
 

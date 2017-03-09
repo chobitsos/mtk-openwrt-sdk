@@ -8,6 +8,7 @@ restoreEsw()
 	switch reg w 4c 1
 	switch reg w 50 2001
 	switch reg w 70 ffffffff
+	switch reg w 74 ffffffff
 	switch reg w 98 7f7f
 	switch reg w e4 7f
 	
@@ -20,7 +21,7 @@ configEsw()
 	switch reg w 50 2001
 	switch reg w 98 7f3f
 if [ "$CONFIG_RAETH_SPECIAL_TAG" == "y" ]; then
-	switch reg w e4 40043f  
+	switch reg w e4 40043f
 else
 	switch reg w e4 3f
 fi
@@ -37,6 +38,7 @@ else
 		switch reg w 44 1001
 		switch reg w 48 1002
 		switch reg w 70 ffff506f
+		switch reg w 74 ffffffff
 fi
 	elif [ "$1" = "WLLLL" ]; then
 if [ "$CONFIG_RAETH_SPECIAL_TAG" == "y" ]; then
@@ -50,6 +52,7 @@ else
 		switch reg w 44 1001
 		switch reg w 48 1001
 		switch reg w 70 ffff417e
+		switch reg w 74 ffffffff
 fi
 	elif [ "$1" = "W1234" ]; then
 		switch reg w 40 1005
@@ -82,10 +85,10 @@ fi
 
 setup_switch()
 {
-    configEsw LLLLW
+	configEsw LLLLW
 }
 
 reset_switch()
 {
-    restoreEsw
+	restoreEsw
 }
