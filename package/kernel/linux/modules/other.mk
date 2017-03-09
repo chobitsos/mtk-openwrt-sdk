@@ -322,7 +322,7 @@ $(eval $(call KernelPackage,sdhci))
 define KernelPackage/oprofile
   SUBMENU:=$(OTHER_MENU)
   TITLE:=OProfile profiling support
-  KCONFIG:=CONFIG_OPROFILE
+  KCONFIG:=CONFIG_OPROFILE=m CONFIG_PROFILING=y
   FILES:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/oprofile/oprofile.ko
 endef
 

@@ -24,3 +24,4 @@
 TAGS*~
 git-src
 .p4cache/
+package/boot/uboot-ramips

@@ -8,7 +8,7 @@
 define Profile/MT7628
 	NAME:=MT7628 Default
 	PACKAGES:= -swconfig -rt2x00 \
-		ated reg gpio btnd switch ethstt uci2dat mii_mgr watchdog 8021xd \
+		ated reg gpio btnd switch ethstt uci2dat mii_mgr watchdog 8021xd eth_mac \
 		wireless-tools xl2tpd block-mount fstools kmod-scsi-generic \
 		kmod-usb-core kmod-usb-ohci kmod-usb2 kmod-usb-storage \
 		kmod-fs-vfat kmod-fs-ntfs kmod-nls-base kmod-nls-utf8 kmod-nls-cp936 \

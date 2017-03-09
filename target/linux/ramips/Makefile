@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 ARCH:=mipsel
 BOARD:=ramips
 BOARDNAME:=MTK/Ralink APSoC
-SUBTARGETS:=mt7620a mt7620n mt7621 mt7628
+SUBTARGETS:=mt7620 mt7621 mt7628
 FEATURES:=squashfs gpio
 
 LINUX_P4PATH:=//WIFI_SOC/MP/SDK_4_3_0_0/RT288x_SDK/source

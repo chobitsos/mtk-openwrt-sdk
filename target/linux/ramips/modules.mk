@@ -56,9 +56,9 @@ $(eval $(call KernelPackage,i2c-ralink))
 
 
 define KernelPackage/hw_nat
-  CATEGORY:=Ralink Properties
+  CATEGORY:=MTK Properties
   SUBMENU:=Drivers
-  TITLE:=Ralink Hardware NAT
+  TITLE:=MTK Hardware NAT
   KCONFIG:=CONFIG_RA_HW_NAT
   DEPENDS:=@TARGET_ramips_mt7620a||@TARGET_ramips_mt7621
   FILES:=$(LINUX_DIR)/net/nat/hw_nat/hw_nat.ko
@@ -95,10 +95,12 @@ $(eval $(call KernelPackage,sound-mt7620))
 
 
 define KernelPackage/mtk-mmc
-  CATEGORY:=Ralink Properties
+  CATEGORY:=MTK Properties
   SUBMENU:=Drivers
   TITLE:=MMC/SD card support
   DEPENDS:=+kmod-mmc
+  KCONFIG:= \
+	CONFIG_MTK_MMC=m
   FILES:= \
     $(LINUX_DIR)/drivers/mmc/host/mtk-mmc/mtk_sd.ko
   AUTOLOAD:=$(call AutoLoad,90,mtk_sd)
@@ -109,4 +111,41 @@ define KernelPackage/mtk-mmc/description
 endef
 
 $(eval $(call KernelPackage,mtk-mmc))
+
+
+define KernelPackage/hw_wdg
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=MTK APSoC Watchdog Driver
+  KCONFIG:= CONFIG_WATCHDOG=y CONFIG_RALINK_WATCHDOG CONFIG_RALINK_TIMER_WDG_RESET_OUTPUT=y
+  FILES:=$(LINUX_DIR)/drivers/watchdog/ralink_wdt.ko
+  AUTOLOAD:=$(call AutoProbe,ralink_wdt)
+endef
+
+$(eval $(call KernelPackage,hw_wdg))
+
+
+define KernelPackage/hw_kwdg
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=Kernel Mode Watchdog
+  KCONFIG:=CONFIG_RALINK_TIMER CONFIG_RALINK_TIMER_DFS=y CONFIG_RALINK_TIMER_WDG CONFIG_RALINK_WDG_TIMER=10 CONFIG_RALINK_WDG_REFRESH_INTERVAL=4 CONFIG_RALINK_TIMER_WDG_RESET_OUTPUT=y
+  FILES:=$(LINUX_DIR)/arch/mips/ralink/ralink_wdt.ko
+  AUTOLOAD:=$(call AutoProbe,ralink_wdt)
+endef
+
+$(eval $(call KernelPackage,hw_kwdg))
+
+
+define KernelPackage/rdm
+  CATEGORY:=MTK Properties
+  SUBMENU:=Drivers
+  TITLE:=Register Debug Module
+  KCONFIG:=CONFIG_RALINK_RDM=m
+  FILES:=$(LINUX_DIR)/drivers/net/rt_rdm/rt_rdm.ko
+  AUTOLOAD:=$(call AutoProbe,rt_rdm)
+endef
+
+$(eval $(call KernelPackage,rdm))
+
 

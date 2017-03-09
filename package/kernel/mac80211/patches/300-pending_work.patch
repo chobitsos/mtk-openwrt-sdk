@@ -1,3 +1,115 @@
+commit 228ee4473b89118993c17ead26381c490c44f9fb
+Author: Felix Fietkau <nbd@openwrt.org>
+Date:   Sun Nov 30 20:34:16 2014 +0100
+
+    ath9k: fix BE/BK queue order
+    
+    Hardware queues are ordered by priority. Use queue index 0 for BK, which
+    has lower priority than BE.
+    
+    Cc: stable@vger.kernel.org
+    Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+
+commit cae76a90c891c5f96895b9628060449e3deb08c6
+Author: Felix Fietkau <nbd@openwrt.org>
+Date:   Sun Nov 30 20:30:46 2014 +0100
+
+    ath9k_hw: fix hardware queue allocation
+    
+    The driver passes the desired hardware queue index for a WMM data queue
+    in qinfo->tqi_subtype. This was ignored in ath9k_hw_setuptxqueue, which
+    instead relied on the order in which the function is called.
+    
+    Cc: stable@vger.kernel.org
+    Reported-by: Hubert Feurstein <h.feurstein@gmail.com>
+    Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+
+commit 77980bee5f1f743b46f8749185aca28b8ec69741
+Author: Johannes Berg <johannes.berg@intel.com>
+Date:   Mon Nov 3 14:29:09 2014 +0100
+
+    mac80211: fix use-after-free in defragmentation
+    
+    Upon receiving the last fragment, all but the first fragment
+    are freed, but the multicast check for statistics at the end
+    of the function refers to the current skb (the last fragment)
+    causing a use-after-free bug.
+    
+    Since multicast frames cannot be fragmented and we check for
+    this early in the function, just modify that check to also
+    do the accounting to fix the issue.
+    
+    Cc: stable@vger.kernel.org
+    Reported-by: Yosef Khyal <yosefx.khyal@intel.com>
+    Signed-off-by: Johannes Berg <johannes.berg@intel.com>
+
+commit e252be2d718dada0abd72208a44b9f1b63919883
+Author: Hauke Mehrtens <hauke@hauke-m.de>
+Date:   Wed Nov 5 23:31:07 2014 +0100
+
+    b43: fix NULL pointer dereference in b43_phy_copy()
+    
+    phy_read and phy_write are not set for every phy any more sine this:
+    commit d342b95dd735014a590f9051b1ba227eb54ca8f6
+    Author: RafaÅ‚ MiÅ‚ecki <zajec5@gmail.com>
+    Date:   Thu Jul 31 21:59:43 2014 +0200
+    
+        b43: don't duplicate common PHY read/write ops
+    
+    b43_phy_copy() accesses phy_read and phy_write directly and will fail
+    with some phys. This patch fixes the regression by using the
+    b43_phy_read() and b43_phy_write() functions which should be used for
+    read and write access.
+    
+    This should fix this bug report:
+    https://bugzilla.kernel.org/show_bug.cgi?id=87731
+    
+    Reported-by: Volker Kempter <v.kempter@pe.tu-clausthal.de>
+    Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
+
+commit ddf93ad61cb009ed05ff2547923fb269a3604408
+Author: Miaoqing Pan <miaoqing@qca.qualcomm.com>
+Date:   Thu Nov 6 10:52:23 2014 +0530
+
+    ath9k: Fix RTC_DERIVED_CLK usage
+    
+    Based on the reference clock, which could be 25MHz or 40MHz,
+    AR_RTC_DERIVED_CLK is programmed differently for AR9340 and AR9550.
+    But, when a chip reset is done, processing the initvals
+    sets the register back to the default value.
+    
+    Fix this by moving the code in ath9k_hw_init_pll() to
+    ar9003_hw_override_ini(). Also, do this override for AR9531.
+    
+    Cc: stable@vger.kernel.org
+    Signed-off-by: Miaoqing Pan <miaoqing@qca.qualcomm.com>
+    Signed-off-by: Sujith Manoharan <c_manoha@qca.qualcomm.com>
+
+commit 536b05e91ac2715942f792184c26beb43dbaa522
+Author: Felix Fietkau <nbd@openwrt.org>
+Date:   Mon Oct 27 11:50:28 2014 +0100
+
+    mac80211: flush keys for AP mode on ieee80211_do_stop
+    
+    Userspace can add keys to an AP mode interface before start_ap has been
+    called. If there have been no calls to start_ap/stop_ap in the mean
+    time, the keys will still be around when the interface is brought down.
+    
+    Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+
+commit c35074725eb19f353beb5f71266f9e985e46f583
+Author: Felix Fietkau <nbd@openwrt.org>
+Date:   Wed Oct 22 18:16:14 2014 +0200
+
+    ath9k_common: always update value in ath9k_cmn_update_txpow
+    
+    In some cases the limit may be the same as reg->power_limit, but the
+    actual value that the hardware uses is not up to date. In that case, a
+    wrong value for current tx power is tracked internally.
+    Fix this by unconditionally updating it.
+    
+    Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+
 commit 11f17631d9bf2a9e910dac7d09ba4581f5693831
 Author: Felix Fietkau <nbd@openwrt.org>
 Date:   Tue Sep 9 09:48:30 2014 +0200
@@ -973,6 +1085,36 @@ Date:   Mon May 19 21:20:49 2014 +0200
 +	set_sta_flag(sta, WLAN_STA_PS_DELIVER);
 +	clear_sta_flag(sta, WLAN_STA_PS_STA);
  	ieee80211_sta_ps_deliver_wakeup(sta);
+ }
+ 
+@@ -1646,11 +1648,14 @@ ieee80211_rx_h_defragment(struct ieee802
+ 	sc = le16_to_cpu(hdr->seq_ctrl);
+ 	frag = sc & IEEE80211_SCTL_FRAG;
+ 
+-	if (likely((!ieee80211_has_morefrags(fc) && frag == 0) ||
+-		   is_multicast_ether_addr(hdr->addr1))) {
+-		/* not fragmented */
++	if (likely(!ieee80211_has_morefrags(fc) && frag == 0))
++		goto out;
++
++	if (is_multicast_ether_addr(hdr->addr1)) {
++		rx->local->dot11MulticastReceivedFrameCount++;
+ 		goto out;
+ 	}
++
+ 	I802_DEBUG_INC(rx->local->rx_handlers_fragments);
+ 
+ 	if (skb_linearize(rx->skb))
+@@ -1743,10 +1748,7 @@ ieee80211_rx_h_defragment(struct ieee802
+  out:
+ 	if (rx->sta)
+ 		rx->sta->rx_packets++;
+-	if (is_multicast_ether_addr(hdr->addr1))
+-		rx->local->dot11MulticastReceivedFrameCount++;
+-	else
+-		ieee80211_led_rx(rx->local);
++	ieee80211_led_rx(rx->local);
+ 	return RX_CONTINUE;
  }
  
 --- a/net/mac80211/sta_info.h
@@ -2067,7 +2209,15 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	if (err < 0)
  		return err;
  	ieee80211_bss_info_change_notify(sdata, err);
-@@ -3073,7 +2766,8 @@ static int ieee80211_set_after_csa_beaco
+@@ -1164,7 +857,6 @@ static int ieee80211_stop_ap(struct wiph
+ 	sdata->u.ap.driver_smps_mode = IEEE80211_SMPS_OFF;
+ 
+ 	__sta_info_flush(sdata, true);
+-	ieee80211_free_keys(sdata, true);
+ 
+ 	sdata->vif.bss_conf.enable_beacon = false;
+ 	sdata->vif.bss_conf.ssid_len = 0;
+@@ -3073,7 +2765,8 @@ static int ieee80211_set_after_csa_beaco
  
  	switch (sdata->vif.type) {
  	case NL80211_IFTYPE_AP:
@@ -2077,7 +2227,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  		kfree(sdata->u.ap.next_beacon);
  		sdata->u.ap.next_beacon = NULL;
  
-@@ -3176,6 +2870,7 @@ static int ieee80211_set_csa_beacon(stru
+@@ -3176,6 +2869,7 @@ static int ieee80211_set_csa_beacon(stru
  				    struct cfg80211_csa_settings *params,
  				    u32 *changed)
  {
@@ -2085,7 +2235,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	int err;
  
  	switch (sdata->vif.type) {
-@@ -3210,20 +2905,13 @@ static int ieee80211_set_csa_beacon(stru
+@@ -3210,20 +2904,13 @@ static int ieee80211_set_csa_beacon(stru
  		     IEEE80211_MAX_CSA_COUNTERS_NUM))
  			return -EINVAL;
  
@@ -2112,7 +2262,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  		if (err < 0) {
  			kfree(sdata->u.ap.next_beacon);
  			return err;
-@@ -3367,7 +3055,6 @@ __ieee80211_channel_switch(struct wiphy 
+@@ -3367,7 +3054,6 @@ __ieee80211_channel_switch(struct wiphy 
  	sdata->csa_radar_required = params->radar_required;
  	sdata->csa_chandef = params->chandef;
  	sdata->csa_block_tx = params->block_tx;
@@ -2120,7 +2270,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	sdata->vif.csa_active = true;
  
  	if (sdata->csa_block_tx)
-@@ -3515,10 +3202,23 @@ static int ieee80211_mgmt_tx(struct wiph
+@@ -3515,10 +3201,23 @@ static int ieee80211_mgmt_tx(struct wiph
  	     sdata->vif.type == NL80211_IFTYPE_ADHOC) &&
  	    params->n_csa_offsets) {
  		int i;
@@ -2147,7 +2297,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	}
  
  	IEEE80211_SKB_CB(skb)->flags = flags;
-@@ -3598,21 +3298,6 @@ static int ieee80211_get_antenna(struct 
+@@ -3598,21 +3297,6 @@ static int ieee80211_get_antenna(struct 
  	return drv_get_antenna(local, tx_ant, rx_ant);
  }
  
@@ -2169,7 +2319,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  static int ieee80211_set_rekey_data(struct wiphy *wiphy,
  				    struct net_device *dev,
  				    struct cfg80211_gtk_rekey_data *data)
-@@ -3844,8 +3529,6 @@ const struct cfg80211_ops mac80211_confi
+@@ -3844,8 +3528,6 @@ const struct cfg80211_ops mac80211_confi
  	.mgmt_frame_register = ieee80211_mgmt_frame_register,
  	.set_antenna = ieee80211_set_antenna,
  	.get_antenna = ieee80211_get_antenna,
@@ -2178,7 +2328,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	.set_rekey_data = ieee80211_set_rekey_data,
  	.tdls_oper = ieee80211_tdls_oper,
  	.tdls_mgmt = ieee80211_tdls_mgmt,
-@@ -3854,9 +3537,6 @@ const struct cfg80211_ops mac80211_confi
+@@ -3854,9 +3536,6 @@ const struct cfg80211_ops mac80211_confi
  #ifdef CONFIG_PM
  	.set_wakeup = ieee80211_set_wakeup,
  #endif
@@ -2362,7 +2512,17 @@ Date:   Mon May 19 21:20:49 2014 +0200
  
  	sdata->encrypt_headroom = IEEE80211_ENCRYPT_HEADROOM;
  
-@@ -1303,6 +1304,7 @@ static void ieee80211_setup_sdata(struct
+@@ -928,9 +929,6 @@ static void ieee80211_do_stop(struct iee
+ 		 * another CPU.
+ 		 */
+ 		ieee80211_free_keys(sdata, true);
+-
+-		/* fall through */
+-	case NL80211_IFTYPE_AP:
+ 		skb_queue_purge(&sdata->skb_queue);
+ 	}
+ 
+@@ -1303,6 +1301,7 @@ static void ieee80211_setup_sdata(struct
  	sdata->control_port_protocol = cpu_to_be16(ETH_P_PAE);
  	sdata->control_port_no_encrypt = false;
  	sdata->encrypt_headroom = IEEE80211_ENCRYPT_HEADROOM;
@@ -2370,7 +2530,7 @@ Date:   Mon May 19 21:20:49 2014 +0200
  
  	sdata->noack_map = 0;
  
-@@ -1721,6 +1723,8 @@ int ieee80211_if_add(struct ieee80211_lo
+@@ -1721,6 +1720,8 @@ int ieee80211_if_add(struct ieee80211_lo
  
  		ndev->features |= local->hw.netdev_features;
  
@@ -3212,7 +3372,27 @@ Date:   Mon May 19 21:20:49 2014 +0200
  static u32 ar9003_hw_compute_pll_control(struct ath_hw *ah,
  					 struct ath9k_channel *chan)
  {
-@@ -1779,7 +1796,12 @@ void ar9003_hw_attach_phy_ops(struct ath
+@@ -647,6 +664,19 @@ static void ar9003_hw_override_ini(struc
+ 		ah->enabled_cals |= TX_CL_CAL;
+ 	else
+ 		ah->enabled_cals &= ~TX_CL_CAL;
++
++	if (AR_SREV_9340(ah) || AR_SREV_9531(ah) || AR_SREV_9550(ah)) {
++		if (ah->is_clk_25mhz) {
++			REG_WRITE(ah, AR_RTC_DERIVED_CLK, 0x17c << 1);
++			REG_WRITE(ah, AR_SLP32_MODE, 0x0010f3d7);
++			REG_WRITE(ah, AR_SLP32_INC, 0x0001e7ae);
++		} else {
++			REG_WRITE(ah, AR_RTC_DERIVED_CLK, 0x261 << 1);
++			REG_WRITE(ah, AR_SLP32_MODE, 0x0010f400);
++			REG_WRITE(ah, AR_SLP32_INC, 0x0001e800);
++		}
++		udelay(100);
++	}
+ }
+ 
+ static void ar9003_hw_prog_ini(struct ath_hw *ah,
+@@ -1779,7 +1809,12 @@ void ar9003_hw_attach_phy_ops(struct ath
  
  	priv_ops->rf_set_freq = ar9003_hw_set_channel;
  	priv_ops->spur_mitigate_freq = ar9003_hw_spur_mitigate;
@@ -3265,6 +3445,26 @@ Date:   Mon May 19 21:20:49 2014 +0200
  	if (AR_SREV_9565(ah))
  		pll |= 0x40000;
  	REG_WRITE(ah, AR_RTC_PLL_CONTROL, pll);
+@@ -858,19 +861,6 @@ static void ath9k_hw_init_pll(struct ath
+ 	udelay(RTC_PLL_SETTLE_DELAY);
+ 
+ 	REG_WRITE(ah, AR_RTC_SLEEP_CLK, AR_RTC_FORCE_DERIVED_CLK);
+-
+-	if (AR_SREV_9340(ah) || AR_SREV_9550(ah)) {
+-		if (ah->is_clk_25mhz) {
+-			REG_WRITE(ah, AR_RTC_DERIVED_CLK, 0x17c << 1);
+-			REG_WRITE(ah, AR_SLP32_MODE, 0x0010f3d7);
+-			REG_WRITE(ah,  AR_SLP32_INC, 0x0001e7ae);
+-		} else {
+-			REG_WRITE(ah, AR_RTC_DERIVED_CLK, 0x261 << 1);
+-			REG_WRITE(ah, AR_SLP32_MODE, 0x0010f400);
+-			REG_WRITE(ah,  AR_SLP32_INC, 0x0001e800);
+-		}
+-		udelay(100);
+-	}
+ }
+ 
+ static void ath9k_hw_init_interrupt_masks(struct ath_hw *ah,
 --- a/drivers/net/wireless/ath/ath9k/reg.h
 +++ b/drivers/net/wireless/ath/ath9k/reg.h
 @@ -1236,12 +1236,23 @@ enum {
@@ -3291,3 +3491,64 @@ Date:   Mon May 19 21:20:49 2014 +0200
  
  #define AR_RTC_9160_PLL_DIV	0x000003ff
  #define AR_RTC_9160_PLL_DIV_S   0
+--- a/drivers/net/wireless/ath/ath9k/common.c
++++ b/drivers/net/wireless/ath/ath9k/common.c
+@@ -368,11 +368,11 @@ void ath9k_cmn_update_txpow(struct ath_h
+ {
+ 	struct ath_regulatory *reg = ath9k_hw_regulatory(ah);
+ 
+-	if (reg->power_limit != new_txpow) {
++	if (reg->power_limit != new_txpow)
+ 		ath9k_hw_set_txpowerlimit(ah, new_txpow, false);
+-		/* read back in case value is clamped */
+-		*txpower = reg->max_power_level;
+-	}
++
++	/* read back in case value is clamped */
++	*txpower = reg->max_power_level;
+ }
+ EXPORT_SYMBOL(ath9k_cmn_update_txpow);
+ 
+--- a/drivers/net/wireless/b43/phy_common.c
++++ b/drivers/net/wireless/b43/phy_common.c
+@@ -276,8 +276,7 @@ void b43_phy_write(struct b43_wldev *dev
+ void b43_phy_copy(struct b43_wldev *dev, u16 destreg, u16 srcreg)
+ {
+ 	assert_mac_suspended(dev);
+-	dev->phy.ops->phy_write(dev, destreg,
+-		dev->phy.ops->phy_read(dev, srcreg));
++	b43_phy_write(dev, destreg, b43_phy_read(dev, srcreg));
+ }
+ 
+ void b43_phy_mask(struct b43_wldev *dev, u16 offset, u16 mask)
+--- a/drivers/net/wireless/ath/ath9k/hw.h
++++ b/drivers/net/wireless/ath/ath9k/hw.h
+@@ -216,8 +216,8 @@
+ #define AH_WOW_BEACON_MISS		BIT(3)
+ 
+ enum ath_hw_txq_subtype {
+-	ATH_TXQ_AC_BE = 0,
+-	ATH_TXQ_AC_BK = 1,
++	ATH_TXQ_AC_BK = 0,
++	ATH_TXQ_AC_BE = 1,
+ 	ATH_TXQ_AC_VI = 2,
+ 	ATH_TXQ_AC_VO = 3,
+ };
+--- a/drivers/net/wireless/ath/ath9k/mac.c
++++ b/drivers/net/wireless/ath/ath9k/mac.c
+@@ -311,14 +311,7 @@ int ath9k_hw_setuptxqueue(struct ath_hw 
+ 		q = ATH9K_NUM_TX_QUEUES - 3;
+ 		break;
+ 	case ATH9K_TX_QUEUE_DATA:
+-		for (q = 0; q < ATH9K_NUM_TX_QUEUES; q++)
+-			if (ah->txq[q].tqi_type ==
+-			    ATH9K_TX_QUEUE_INACTIVE)
+-				break;
+-		if (q == ATH9K_NUM_TX_QUEUES) {
+-			ath_err(common, "No available TX queue\n");
+-			return -1;
+-		}
++		q = qinfo->tqi_subtype;
+ 		break;
+ 	default:
+ 		ath_err(common, "Invalid TX queue type: %u\n", type);

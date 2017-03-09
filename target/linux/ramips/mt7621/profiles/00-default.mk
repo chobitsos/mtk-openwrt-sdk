@@ -9,7 +9,7 @@ define Profile/MT7621
 	NAME:=Default Profile
 	PACKAGES:=\
 		-swconfig -rt2x00 \
-		ated hwnat reg gpio btnd switch ethstt uci2dat mii_mgr watchdog 8021xd \
+		ated hwnat reg gpio btnd switch ethstt uci2dat mii_mgr watchdog 8021xd eth_mac\
 		wireless-tools block-mount fstools kmod-scsi-generic \
 		kmod-usb-core kmod-usb3 kmod-usb-storage \
 		kmod-fs-vfat kmod-fs-ntfs kmod-nls-base kmod-nls-utf8 kmod-nls-cp936 \
