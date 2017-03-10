@@ -27,7 +27,7 @@
 	security = user
 	smb encrypt = disabled
 	smb passwd file = /etc/samba/smbpasswd
-	socket options = TCP_NODELAY SO_RCVBUF=480000 SO_SNDBUF=480000
+	socket options = TCP_NODELAY SO_RCVBUF=960000 SO_SNDBUF=960000
 	syslog = 2
 	use sendfile = yes
 	use mmap = yes

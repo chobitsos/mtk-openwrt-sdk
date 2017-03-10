@@ -6,12 +6,13 @@
 #
 
 define Profile/MT7623_MTD
-    NAME:=MT7623 (MTD) Default Profile
+    NAME:=Default Profile
     PACKAGES:=\
         -swconfig -rt2x00 \
-        ated hwnat switch uci2dat mii_mgr 8021xd e2fsprogs luci \
+        ated hwnat switch uci2dat mii_mgr 8021xd e2fsprogs luci mpstat reg \
         wireless-tools block-mount fstools kmod-scsi-generic \
-        kmod-usb-core kmod-ohci kmod-usb2 kmod-usb-storage \
+        kmod-nf-sc \
+        kmod-usb-core kmod-usb-storage \
         kmod-fs-vfat kmod-fs-ext4 kmod-fs-ntfs \
         kmod-nls-base kmod-nls-utf8 kmod-nls-cp936 \
         kmod-nls-cp437 kmod-nls-cp850 kmod-nls-iso8859-1 kmod-nls-iso8859-15 kmod-nls-cp950

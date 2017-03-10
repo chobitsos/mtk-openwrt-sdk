@@ -12,11 +12,13 @@ scan_mt7615e5() {
 }
 
 disable_mt7615e5() {
+	iwpriv ra0 set hw_nat_register=0
 	disable_ralink_wifi mt7615e5
 }
 
 enable_mt7615e5() {
 	enable_ralink_wifi mt7615e5 mt7615e
+	iwpriv rai0 set hw_nat_register=1
 }
 
 detect_mt7615e5() {

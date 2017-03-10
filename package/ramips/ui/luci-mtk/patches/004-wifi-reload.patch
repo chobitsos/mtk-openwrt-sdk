@@ -6,7 +6,7 @@ Index: luci/modules/admin-full/luasrc/controller/admin/network.lua
  		local dev = wnet:get_device()
  		local nets = wnet:get_networks()
  		if dev then
-+			luci.sys.call("env -i /sbin/wifi down %q >/dev/null" % dev:name())
++			luci.sys.call("env -i /sbin/wifi down >/dev/null 2>/dev/null")
  			ntm:del_wifinet(network)
  			ntm:commit("wireless")
  			local _, net
@@ -15,7 +15,7 @@ Index: luci/modules/admin-full/luasrc/controller/admin/network.lua
  				end
  			end
 -			luci.sys.call("env -i /bin/ubus call network reload >/dev/null 2>/dev/null")
-+			luci.sys.call("env -i /sbin/wifi up %q >/dev/null" % dev:name())
++			luci.sys.call("env -i /sbin/wifi up >/dev/null 2>/dev/null")
  		end
  	end
  

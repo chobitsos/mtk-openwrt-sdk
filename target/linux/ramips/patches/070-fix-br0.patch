@@ -2,7 +2,20 @@ Index: linux-3.10.14/net/nat/hw_nat/ra_nat.c
 ===================================================================
 --- linux-3.10.14.orig/net/nat/hw_nat/ra_nat.c
 +++ linux-3.10.14/net/nat/hw_nat/ra_nat.c
-@@ -3957,7 +3957,7 @@ static void SetAclFwd(uint32_t Ebl)
+@@ -3575,10 +3575,12 @@ static void PpeSetDstPort(uint32_t Ebl)
+ 	dev=ra_dev_get_by_name("eth0");
+ 	printk("eth2 ifindex =%x\n", dev->ifindex);
+ 	DstPort[dev->ifindex] = dev;
++	DP_GMAC1 = dev->ifindex;
+ #ifdef CONFIG_RAETH_GMAC2
+ 	dev=ra_dev_get_by_name("eth1");
+ 	printk("eth2 ifindex =%x\n", dev->ifindex);
+ 	DstPort[dev->ifindex] = dev;
++	DPORT_GMAC2 = dev->ifindex;;
+ #endif
+ #else
+ 	dev=ra_dev_get_by_name("eth2");
+@@ -3962,7 +3964,7 @@ static void SetAclFwd(uint32_t Ebl)
  #else
  		WanInt = ra_dev_get_by_name("eth2.2");
  #endif

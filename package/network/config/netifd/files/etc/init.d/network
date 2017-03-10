@@ -32,13 +32,11 @@ stop_service() {
 }
 
 service_running() {
-	rmmod hw_nat
 	rmmod nf_sc
 	ubus -t 30 wait_for network.interface
 	/sbin/wifi reload_legacy
 	sleep 3
 	init_switch
-	insmod /lib/modules/ralink/hw_nat.ko
 	insmod /lib/modules/ralink/nf_sc.ko
 	mii_mgr -s -p 0 -r 0 -v 3300
 	mii_mgr -s -p 1 -r 0 -v 3300
@@ -143,23 +141,19 @@ service_triggers()
 }
 
 restart() {
-	rmmod hw_nat
 	rmmod nf_sc
 	ifdown -a
 	sleep 1
 	trap '' TERM
 	stop "$@"
 	start "$@"
-	#insmod /lib/modules/ralink/hw_nat.ko
 	insmod /lib/modules/ralink/nf_sc.ko
 }
 
 reload_service() {
-#	rmmod hw_nat
 #	init_switch
 #	ubus call network reload
 #	/sbin/wifi reload_legacy
-#	insmod /lib/modules/ralink/hw_nat.ko
 #	mii_mgr -s -p 0 -r 0 -v 3300
 #	mii_mgr -s -p 1 -r 0 -v 3300
 #	mii_mgr -s -p 2 -r 0 -v 3300
@@ -168,7 +162,6 @@ reload_service() {
 }
 
 shutdown() {
-	rmmod hw_nat
 	rmmod nf_sc
 	ifdown -a
 	stop

@@ -30,7 +30,7 @@ define Package/samba-server
   CATEGORY:=MTK Properties
   SUBMENU:=Applications
   TITLE:=Samba Server
-  DEPENDS:=+USE_EGLIBC:librt +libaio +libpthread
+  DEPENDS:=+USE_EGLIBC:librt +libaio +libpthread +libz
 endef
 
 define Package/samba-server/config
@@ -69,12 +69,6 @@ CONFIGURE_VARS += \
 	LINUX_LFS_SUPPORT=yes \
 	samba_cv_big_endian=no \
 	samba_cv_little_endian=yes \
-	samba_cv_SIZEOF_BLKCNT_T_4=no \
-	samba_cv_SIZEOF_BLKCNT_T_8=yes \
-	samba_cv_SIZEOF_DEV_T=8 \
-	samba_cv_SIZEOF_INO_T=8 \
-	samba_cv_SIZEOF_OFF_T=8 \
-	samba_cv_SIZEOF_TIME_T=4 \
 	samba_cv_TIME_T_MAX=no \
 	samba_cv_have_longlong=yes \
 	samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
@@ -88,7 +82,7 @@ CONFIGURE_VARS += \
 	samba_cv_have_setreuid=yes \
 	samba_cv_have_setresuid=yes \
 	ac_cv_header_zlib_h=no \
-	samba_cv_zlib_1_2_3=no
+	samba_cv_zlib_1_2_3=yes
 
 CONFIGURE_ARGS += \
 	--exec-prefix=/ \

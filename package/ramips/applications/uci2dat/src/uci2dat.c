@@ -403,12 +403,12 @@ param CFG_ELEMENTS[] =
     {"WscVendorPinCode", "wsc_vendorpin", {0}, hooker, NULL},
     {"WscV2Support", "wsc_v2", {0}, hooker, NULL},
     {"HT_MIMOPS", "mimops", {0}, hooker, "3"},
-    {"G_BAND_256QAM", "g256qam", {0}, hooker, "0"},
+    {"G_BAND_256QAM", "g256qam", {0}, hooker, "1"},
     {"DBDC_MODE", "dbdc", {0}, hooker, "0"},
     {"txbf", "txbf", {0}, hooker, "0"},
     {"IgmpSnEnable", "igmpsnoop", {0}, hooker, "1"},
 
-    {"MUTxRxEnable", "mutxrxenable", {0}, hooker, "0"},
+    {"MUTxRxEnable", "mutxrxenable", {0}, hooker, "1"},
 
     {"ITxBfEnCond", "itxbfencond", {0}, hooker, "0"},
 
@@ -1061,6 +1061,12 @@ void hooker(FILE * fp, param * p, const char * devname)
             FPRINT(fp, p, "ETxBfEnCond=0\n");
             FPRINT(fp, p, "ETxBfIncapable=1\n");
             FPRINT(fp, p, "ITxBfEn=0");
+       }else //default eBF & iBF On
+       {	
+            FPRINT(fp, p, "3\n");
+            FPRINT(fp, p, "ETxBfEnCond=1\n");
+            FPRINT(fp, p, "ETxBfIncapable=0\n");
+            FPRINT(fp, p, "ITxBfEn=1");
        }
     }
 #if 0

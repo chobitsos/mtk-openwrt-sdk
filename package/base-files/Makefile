@@ -151,6 +151,13 @@ define Package/base-files/install
 	-cp -f $(LINUX_DIR)/.config $(1)/etc/kernel.config
 	if [ -d ../../.git ]; then echo `git rev-parse HEAD | cut -c-8` > $(1)/etc/sdk.version ;fi
 	if [ -f $(LINUX_DIR)/.p4rev ]; then cp $(LINUX_DIR)/.p4rev $(1)/etc/kernel.p4rev ;fi
+	echo " MTK OpenWrt SDK V3.4" >> $(1)/etc/banner
+	echo -n " revision : " >> $(1)/etc/banner
+	cat $(1)/etc/sdk.version >> $(1)/etc/banner
+	echo " benchmark : APSoC SDK 5.0.1.0" >> $(1)/etc/banner
+	echo -n " kernel : " >> $(1)/etc/banner
+	cat $(1)/etc/kernel.p4rev >> $(1)/etc/banner
+	echo " -----------------------------------------------------" >> $(1)/etc/banner
 endef
 
 ifneq ($(DUMP),1)

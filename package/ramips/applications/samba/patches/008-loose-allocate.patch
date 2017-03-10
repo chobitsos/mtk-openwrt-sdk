@@ -46,7 +46,36 @@ Index: samba-4.0.24/source3/modules/vfs_default.c
 ===================================================================
 --- samba-4.0.24.orig/source3/modules/vfs_default.c
 +++ samba-4.0.24/source3/modules/vfs_default.c
-@@ -1690,6 +1690,9 @@ static int vfswrap_ftruncate(vfs_handle_
+@@ -1345,28 +1345,7 @@ static uint64_t vfswrap_get_alloc_size(v
+ 	   signed (according to POSIX) and can be less than 64-bits.
+ 	   Ensure when we're converting to 64 bits wide we don't
+ 	   sign extend. */
+-#if defined(SIZEOF_BLKCNT_T_8)
+ 	result = (uint64_t)STAT_ST_BLOCKSIZE * (uint64_t)sbuf->st_ex_blocks;
+-#elif defined(SIZEOF_BLKCNT_T_4)
+-	{
+-		uint64_t bs = ((uint64_t)sbuf->st_ex_blocks) & 0xFFFFFFFFLL;
+-		result = (uint64_t)STAT_ST_BLOCKSIZE * bs;
+-	}
+-#else
+-#error SIZEOF_BLKCNT_T_NOT_A_SUPPORTED_VALUE
+-#endif
+-	if (result == 0) {
+-		/*
+-		 * Some file systems do not allocate a block for very
+-		 * small files. But for non-empty file should report a
+-		 * positive size.
+-		 */
+-
+-		uint64_t filesize = get_file_size_stat(sbuf);
+-		if (filesize > 0) {
+-			result = MIN((uint64_t)STAT_ST_BLOCKSIZE, filesize);
+-		}
+-	}
+ #else
+ 	result = get_file_size_stat(sbuf);
+ #endif
+@@ -1690,6 +1669,9 @@ static int vfswrap_ftruncate(vfs_handle_
  		return result;
  	}
  

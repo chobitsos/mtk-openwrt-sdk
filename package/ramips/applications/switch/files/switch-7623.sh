@@ -30,6 +30,7 @@ restore6855Esw()
 
 config6855Esw()
 {
+	restore6855Esw
 	if [ "$1" = "LLLLW" ]; then
 		#VLAN member port
 		switch vlan  set 1 1 11110011
